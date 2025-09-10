@@ -1,9 +1,7 @@
-name: Deploy to Remote Server
+name: Build and Publish image to Docker Hub
 
 on:
-  push:
-    branches:
-      - main
+  [workflow_dispatch]
 
 jobs:
   deploy:
@@ -11,25 +9,22 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Log in to DockerHub
-        run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+        uses: actions/checkout@v4
 
       - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/node-docker-app .
+        run: docker build . -t .${{ secrets.DOCKER_USERNAME }}/node-docker-app:latest
 
       - name: Push Docker image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/node-docker-app
+        run: docker push .${{ secrets.DOCKER_USERNAME }}/node-docker-app:latest
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/node-docker-app
-            docker stop node-docker-app || true
-            docker rm node-docker-app || true
-            docker run -d --env-file /path/to/.env -p 80:3000 --name node-docker-app ${{ secrets.DOCKERHUB_USERNAME }}/node-docker-app
+  #    - name: Deploy via SSH
+   #     uses: appleboy/ssh-action@v0.1.10
+    #    with:
+     #     host: ${{ secrets.SSH_HOST }}
+      #    username: ${{ secrets.SSH_USERNAME }}
+       #   key: ${{ secrets.SSH_PRIVATE_KEY }}
+        #  script: |
+         #   docker pull ${{ secrets.DOCKERHUB_USERNAME }}/node-docker-app
+          #  docker stop node-docker-app || true
+           # docker rm node-docker-app || true
+            #docker run -d --env-file /path/to/.env -p 80:3000 --name node-docker-app ${{ secrets.DOCKERHUB_USERNAME }}/node-docker-app
